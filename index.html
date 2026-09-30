@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>LTO Exam - 60 Random Questions (Dark Mode)</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 800px;
+      margin: auto;
+      padding: 1em;
+      background: #121212;
+      color: #ffffff;
+    }
+    .question {
+      background: #1e1e1e;
+      padding: 1em;
+      margin-bottom: 1em;
+      border-left: 5px solid #333;
+      border-radius: 5px;
+    }
+    .correct {
+      background-color: #2e7d32 !important;
+    }
+    .incorrect {
+      background-color: #c62828 !important;
+    }
+    .feedback {
+      margin-top: 0.5em;
+      font-size: 0.95em;
+      padding: 0.5em;
+      background-color: #333;
+      border-radius: 5px;
+    }
+    h1 {
+      text-align: center;
+      color: #90caf9;
+    }
+    label {
+      display: block;
+      margin: 0.3em 0;
+      cursor: pointer;
+    }
+    input[type="radio"] {
+      margin-right: 8px;
+    }
+    #result {
+      font-size: 1.3em;
+      font-weight: bold;
+      text-align: center;
+      margin-top: 2em;
+      color: #fff;
+    }
+    button {
+      display: block;
+      margin: 2em auto;
+      padding: 0.8em 2em;
+      font-size: 1em;
+      background-color: #2196f3;
+      border: none;
+      color: white;
+      cursor: pointer;
+      border-radius: 5px;
+    }
+    button:hover {
+      background-color: #1976d2;
+    }
+    .highlight-answer {
+      font-weight: bold;
+      color: #ffeb3b;
+    }
+  </style>
+</head>
+<body>
+
+<h1>LTO Driver's License Exam</h1>
+<form id="quizForm"></form>
+<button onclick="submitQuiz()">Submit</button>
+<div id="result"></div>
+
+<script src="lto_questions_array.js"></script>
+<script>
+  const questionsToShow = 60;
+  const passingScore = 48;
+
+  const shuffled = allQuestions
+    .map((q, i) => ({ q, index: i }))
+    .sort(() => Math.random() - 0.5)
+    .slice(0, questionsToShow);
+
+  const form = document.getElementById('quizForm');
+
+  shuffled.forEach((item, i) => {
+    const [question, choices] = item.q;
+    const div = document.createElement('div');
+    div.className = 'question';
+    div.setAttribute('data-correct', item.q[2]);
+    div.setAttribute('data-qnum', i);
+    div.innerHTML = `<h3>${i + 1}. ${question}</h3>`;
+    choices.forEach((choice, j) => {
+      const id = `q${i}_${j}`;
+      div.innerHTML += `
+        <label>
+          <input type="radio" name="q${i}" value="${j}" id="${id}">
+          ${choice}
+        </label>`;
+    });
+    form.appendChild(div);
+  });
+
+  function submitQuiz() {
+    let score = 0;
+    shuffled.forEach((item, i) => {
+      const [question, choices, correctIndex] = item.q;
+      const name = `q${i}`;
+      const selected = form[name]?.value;
+      const qDiv = form.children[i];
+
+      let feedbackHTML = '<div class="feedback">';
+      if (selected != null) {
+        const selectedInt = parseInt(selected);
+        if (selectedInt === correctIndex) {
+          score++;
+          qDiv.classList.add('correct');
+        } else {
+          qDiv.classList.add('incorrect');
+        }
+        feedbackHTML += `
+          <span>Your answer: <span class="highlight-answer">${choices[selectedInt]}</span></span><br>
+          <span>Correct answer: <span class="highlight-answer">${choices[correctIndex]}</span></span>
+        `;
+      } else {
+        qDiv.classList.add('incorrect');
+        feedbackHTML += `
+          <span>Your answer: <span class="highlight-answer">No answer</span></span><br>
+          <span>Correct answer: <span class="highlight-answer">${choices[correctIndex]}</span></span>
+        `;
+      }
+      feedbackHTML += '</div>';
+      qDiv.innerHTML += feedbackHTML;
+    });
+
+    const result = document.getElementById('result');
+    result.innerHTML = `You scored <strong>${score}</strong> out of <strong>${questionsToShow}</strong>.<br>`;
+    result.innerHTML += score >= passingScore
+      ? "<span style='color: #81c784'>🎉 You Passed!</span>"
+      : "<span style='color: #e57373'>❗ You Failed.</span>";
+    window.scrollTo(0, document.body.scrollHeight);
+  }
+</script>
+
+</body>
+</html>
